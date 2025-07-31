@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DiagnosticCard } from "./DiagnosticCard";
 import { DiagnosticTester, DiagnosticResult, DiagnosticSummary } from "@/utils/diagnostics";
+import { ThemeToggle } from "./ThemeToggle";
 import { Play, Copy, Send, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -82,6 +83,11 @@ export const DiagnosticPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-bg">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
