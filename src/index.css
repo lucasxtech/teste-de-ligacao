@@ -63,7 +63,7 @@ All colors MUST be HSL.
     --sidebar-ring: 282 88% 53%;
 
     --gradient-primary: linear-gradient(135deg, hsl(282 88% 53%), hsl(285 85% 63%));
-    --gradient-bg: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 98%));
+    --gradient-bg: hsl(0 0% 100%);
     
     --shadow-diagnostic: 0 4px 12px -2px hsl(282 88% 53% / 0.15);
     --shadow-card: 0 2px 8px -2px hsl(280 14% 96% / 0.8);
@@ -123,7 +123,7 @@ All colors MUST be HSL.
     --sidebar-ring: 282 88% 53%;
 
     --gradient-primary: linear-gradient(135deg, hsl(282 88% 53%), hsl(285 85% 63%));
-    --gradient-bg: linear-gradient(135deg, hsl(280 15% 17%), hsl(280 10% 15%));
+    --gradient-bg: hsl(280 15% 17%);
     
     --shadow-diagnostic: 0 4px 12px -2px hsl(282 88% 53% / 0.2);
     --shadow-card: 0 2px 8px -2px hsl(280 32.6% 17.5% / 0.8);

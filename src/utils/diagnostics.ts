@@ -2,9 +2,11 @@ export interface DiagnosticResult {
   id: string;
   title: string;
   description?: string;
-  status: "success" | "error" | "warning" | "loading";
+  status: "success" | "error" | "warning" | "loading" | "pending";
   value?: string;
   category: "device" | "browser" | "network" | "webrtc";
+  explanation?: string;
+  technical?: string;
 }
 
 export interface DiagnosticSummary {
@@ -78,7 +80,9 @@ export class DiagnosticTester {
         title: "Microfone detectado",
         description: microphones.length > 0 ? `${microphones.length} microfone(s) encontrado(s)` : "Nenhum microfone detectado",
         status: microphones.length > 0 ? "success" : "error",
-        category: "device"
+        category: "device",
+        explanation: microphones.length === 0 ? "Nenhum microfone foi detectado. Verifique se há um microfone conectado e se o navegador tem permissão para acessá-lo." : undefined,
+        technical: `Status de compatibilidade com chamadas: ${microphones.length > 0 ? '✅ OK' : '❌ Erro'}`
       });
 
       // Teste de saída de áudio
@@ -88,7 +92,9 @@ export class DiagnosticTester {
         title: "Saída de áudio detectada",
         description: speakers.length > 0 ? `${speakers.length} dispositivo(s) de áudio encontrado(s)` : "Nenhuma saída de áudio detectada",
         status: speakers.length > 0 ? "success" : "warning",
-        category: "device"
+        category: "device",
+        explanation: speakers.length === 0 ? "Nenhum dispositivo de áudio foi detectado. Verifique se há fones ou alto-falantes conectados." : undefined,
+        technical: `Status de reprodução de áudio: ${speakers.length > 0 ? '✅ OK' : '⚠️ Limitado'}`
       });
     } catch (error) {
       this.updateResult({
@@ -96,7 +102,9 @@ export class DiagnosticTester {
         title: "Microfone detectado", 
         description: "Erro ao verificar dispositivos",
         status: "error",
-        category: "device"
+        category: "device",
+        explanation: "Não foi possível acessar os dispositivos. Verifique as permissões do navegador ou tente recarregar a página.",
+        technical: "Status de compatibilidade com chamadas: ❌ Erro"
       });
     }
   }
@@ -117,7 +125,9 @@ export class DiagnosticTester {
       description: supportedBrowser ? "Navegador compatível detectado" : "Navegador não suportado",
       value: userAgent,
       status: supportedBrowser ? "success" : "warning",
-      category: "browser"
+      category: "browser",
+      technical: `Status de compatibilidade com chamadas: ${supportedBrowser ? '✅ OK' : '⚠️ Limitado'}`,
+      explanation: !supportedBrowser ? "Este navegador pode ter limitações para chamadas. Recomendamos usar Chrome, Firefox ou Safari atualizado." : undefined
     });
 
     // Teste de HTTPS
@@ -127,7 +137,9 @@ export class DiagnosticTester {
       title: "HTTPS ativo",
       description: isHttps ? "Conexão segura ativa" : "Conexão não segura - HTTPS necessário",
       status: isHttps ? "success" : "error",
-      category: "browser"
+      category: "browser",
+      explanation: !isHttps ? "Conexões não seguras (HTTP) podem impedir o funcionamento correto das chamadas. Acesse via HTTPS." : undefined,
+      technical: `Protocolo de segurança: ${isHttps ? '✅ HTTPS' : '❌ HTTP'}`
     });
 
     // Teste de WebSockets
@@ -138,7 +150,9 @@ export class DiagnosticTester {
         title: "WebSockets ativos",
         description: wsSupported ? "WebSockets suportados" : "WebSockets não suportados",
         status: wsSupported ? "success" : "error",
-        category: "browser"
+        category: "browser",
+        explanation: !wsSupported ? "WebSockets são necessários para comunicação em tempo real. Atualize seu navegador ou use um navegador compatível." : undefined,
+        technical: `Status de comunicação em tempo real: ${wsSupported ? '✅ OK' : '❌ Erro'}`
       });
     } catch (error) {
       this.updateResult({
@@ -146,7 +160,9 @@ export class DiagnosticTester {
         title: "WebSockets ativos",
         description: "Erro ao verificar WebSockets",
         status: "error",
-        category: "browser"
+        category: "browser",
+        explanation: "Erro ao verificar suporte a WebSockets. Tente recarregar a página.",
+        technical: "Status de comunicação em tempo real: ❌ Erro"
       });
     }
 
@@ -160,7 +176,8 @@ export class DiagnosticTester {
         title: "Permissão de microfone",
         description: "Permissão concedida com sucesso",
         status: "success",
-        category: "browser"
+        category: "browser",
+        technical: "Status de acesso ao microfone: ✅ OK"
       });
     } catch (error) {
       this.updateResult({
@@ -168,7 +185,9 @@ export class DiagnosticTester {
         title: "Permissão de microfone",
         description: "Permissão negada ou erro ao acessar microfone",
         status: "error",
-        category: "browser"
+        category: "browser",
+        explanation: "O navegador bloqueou o acesso ao microfone. Clique no ícone de cadeado na barra de endereços e permita o acesso ao microfone.",
+        technical: "Status de acesso ao microfone: ❌ Erro"
       });
     }
   }
@@ -185,7 +204,8 @@ export class DiagnosticTester {
         description: "IP público obtido com sucesso",
         value: data.ip,
         status: "success",
-        category: "network"
+        category: "network",
+        technical: "Status de conectividade: ✅ OK"
       });
 
       // Teste de velocidade básico
@@ -211,7 +231,10 @@ export class DiagnosticTester {
         description: connectionDesc,
         value: `Latência: ${latency}ms`,
         status: connectionStatus as any,
-        category: "network"
+        category: "network",
+        explanation: latency > 1000 ? "Latência alta detectada. Isso pode causar atrasos e cortes nas chamadas. Verifique sua conexão com a internet." : 
+                    latency > 500 ? "Latência moderada. Pode causar pequenos atrasos nas chamadas." : undefined,
+        technical: `Qualidade da conexão: ${latency < 500 ? '✅ Excelente' : latency < 1000 ? '⚠️ Moderada' : '❌ Ruim'}`
       });
 
     } catch (error) {
@@ -220,7 +243,9 @@ export class DiagnosticTester {
         title: "IP detectado",
         description: "Erro ao obter informações de rede", 
         status: "warning",
-        category: "network"
+        category: "network",
+        explanation: "Não foi possível obter o IP público. Isso pode acontecer devido a firewalls, VPNs ou problemas de conectividade. Tente desativar VPN ou acessar de outra rede.",
+        technical: "Status de conectividade: ⚠️ Limitado"
       });
       
       this.updateResult({
@@ -228,7 +253,9 @@ export class DiagnosticTester {
         title: "Qualidade da conexão",
         description: "Não foi possível testar a conexão",
         status: "warning",
-        category: "network"
+        category: "network",
+        explanation: "Não foi possível testar a qualidade da conexão. Verifique se você está conectado à internet e tente novamente.",
+        technical: "Qualidade da conexão: ⚠️ Não testado"
       });
     }
   }
@@ -243,7 +270,9 @@ export class DiagnosticTester {
         title: "WebRTC disponível",
         description: rtcSupported ? "WebRTC suportado pelo navegador" : "WebRTC não suportado",
         status: rtcSupported ? "success" : "error",
-        category: "webrtc"
+        category: "webrtc",
+        explanation: !rtcSupported ? "Seu navegador não suporta WebRTC, que é essencial para fazer chamadas. Atualize seu navegador ou use Chrome, Firefox ou Safari." : undefined,
+        technical: `Status de chamadas em tempo real: ${rtcSupported ? '✅ OK' : '❌ Erro'}`
       });
 
       if (rtcSupported) {
@@ -280,7 +309,9 @@ export class DiagnosticTester {
           description: candidatesReceived > 0 ? "Rede liberada para chamadas" : "Possíveis restrições de rede",
           value: `${candidatesReceived} candidate(s) encontrado(s)`,
           status: candidatesReceived > 0 ? "success" : "warning",
-          category: "webrtc"
+          category: "webrtc",
+          explanation: candidatesReceived === 0 ? "Não foram encontradas rotas de conexão. Isso pode acontecer devido a firewalls rigorosos ou configurações de rede restritivas. Verifique as configurações de firewall." : undefined,
+          technical: `Rede liberada para chamadas: ${candidatesReceived > 0 ? '✅ OK' : '⚠️ Limitado'}`
         });
       } else {
         this.updateResult({
@@ -288,7 +319,9 @@ export class DiagnosticTester {
           title: "ICE candidates",
           description: "WebRTC não disponível",
           status: "error",
-          category: "webrtc"
+          category: "webrtc",
+          explanation: "WebRTC não está disponível, impossibilitando a realização de chamadas.",
+          technical: "Rede liberada para chamadas: ❌ Erro"
         });
       }
     } catch (error) {
@@ -297,7 +330,9 @@ export class DiagnosticTester {
         title: "WebRTC disponível",
         description: "Erro ao testar WebRTC",
         status: "error",
-        category: "webrtc"
+        category: "webrtc",
+        explanation: "Erro inesperado ao testar WebRTC. Tente recarregar a página.",
+        technical: "Status de chamadas em tempo real: ❌ Erro"
       });
     }
   }

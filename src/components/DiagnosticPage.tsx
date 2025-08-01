@@ -151,6 +151,8 @@ export const DiagnosticPage = () => {
                           description={result.description}
                           status={result.status}
                           value={result.value}
+                          explanation={result.explanation}
+                          technical={result.technical}
                         />
                       </div>
                     ))}
@@ -224,6 +226,16 @@ export const DiagnosticPage = () => {
                         </ul>
                       </div>
                     )}
+
+                    {/* Call to Action Final */}
+                    <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        {summary.overallStatus === "success" 
+                          ? "✅ Todos os testes foram concluídos com sucesso! Seu dispositivo está pronto para chamadas."
+                          : "⚠️ Alguns itens precisam de atenção. Se algo estiver em amarelo ou vermelho, envie este diagnóstico para o suporte."
+                        }
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
