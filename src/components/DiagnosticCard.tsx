@@ -63,10 +63,24 @@ export const DiagnosticCard = ({
   const displayDescription = status === "loading" ? "⏳ Em análise..." : 
                             status === "pending" ? "⏱️ Aguardando..." : description;
 
+  // Tooltips específicos para casos problemáticos
+  const getSpecificTooltip = () => {
+    if (title.includes("IP detectado") && status === "error") {
+      return "⚠️ Não foi possível identificar corretamente o IP ou obter dados completos da sua rede.\nIsso pode ser causado por:\n• Uso de VPN ou proxy\n• Bloqueios de firewall\n• Extensões no navegador que interferem na rede\nTente desativar VPNs e extensões, ou usar outra rede.";
+    }
+    if (title.includes("Qualidade da conexão") && description?.includes("Não testado")) {
+      return "⚠️ Não conseguimos medir a qualidade da sua conexão (latência e estabilidade).\nIsso pode ocorrer por:\n• Bloqueio de testes via firewall ou antivírus\n• Navegador com permissões limitadas\n• Falha temporária na rede\nTente recarregar a página ou testar em outra rede.";
+    }
+    if (title.includes("ICE candidates") && status === "loading") {
+      return "⏳ Estamos tentando identificar possíveis rotas para chamadas (WebRTC).\nIsso pode ficar preso em 'em análise' quando:\n• Há bloqueio de conexões UDP\n• A rede usa NAT simétrico ou CGNAT\n• O navegador ou rede bloqueia servidores STUN";
+    }
+    return explanation;
+  };
+
   return (
     <TooltipProvider>
       <Card className={cn(
-        "transition-all duration-300 hover:shadow-lg border-2",
+        "transition-all duration-300 hover:shadow-lg border-2 rounded-xl",
         config.bgColor,
         config.borderColor,
         status === "loading" && "animate-pulse",
@@ -85,15 +99,15 @@ export const DiagnosticCard = ({
               <Icon className={cn("h-5 w-5", config.iconColor)} />
             </div>
             <span className="flex-1">{title}</span>
-            {(status === "error" || status === "warning") && explanation && (
+            {(status === "error" || status === "warning" || status === "loading") && getSpecificTooltip() && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="p-1 hover:bg-muted/20 rounded-full transition-colors">
                     <HelpCircle className="h-4 w-4 text-muted-foreground" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p className="text-sm">{explanation}</p>
+                <TooltipContent className="max-w-sm">
+                  <p className="text-sm whitespace-pre-line">{getSpecificTooltip()}</p>
                 </TooltipContent>
               </Tooltip>
             )}

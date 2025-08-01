@@ -75,10 +75,10 @@ export const DiagnosticPage = () => {
   };
 
   const categories = [
-    { id: "device", title: "📱 Dispositivos", icon: "🎤" },
-    { id: "browser", title: "🌐 Navegador e Sistema", icon: "🔧" },
-    { id: "network", title: "📡 Rede", icon: "📶" },
-    { id: "webrtc", title: "📞 WebRTC", icon: "☎️" }
+    { id: "device", title: "Dispositivos", icon: "🎤" },
+    { id: "browser", title: "Navegador e Sistema", icon: "🔧" },
+    { id: "network", title: "Rede", icon: "📶" },
+    { id: "webrtc", title: "WebRTC", icon: "☎️" }
   ];
 
   return (
@@ -161,13 +161,68 @@ export const DiagnosticPage = () => {
               );
             })}
 
+            {/* Diagnostic Overview Card */}
+            {summary && (
+              <div className="animate-fade-in mb-8">
+                <Card className="border-2 border-primary/20 bg-primary/5 rounded-xl">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                      📋 Diagnóstico de chamadas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2 text-sm">
+                      {summary.results.some(r => r.title.includes("HTTPS")) && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-success">✔️</span>
+                          <span>HTTPS e WebSockets OK</span>
+                        </div>
+                      )}
+                      {summary.results.some(r => r.title.includes("WebRTC")) && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-success">✔️</span>
+                          <span>WebRTC disponível</span>
+                        </div>
+                      )}
+                      {summary.results.some(r => r.title.includes("IP") && r.status === "error") && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-warning">⚠️</span>
+                          <span>IP e rede com restrição (VPN, firewall ou NAT)</span>
+                        </div>
+                      )}
+                      {summary.results.some(r => r.title.includes("Qualidade") && r.description?.includes("Não testado")) && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-warning">⚠️</span>
+                          <span>Qualidade da conexão não testada</span>
+                        </div>
+                      )}
+                      {summary.results.some(r => r.title.includes("ICE") && r.status === "loading") && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-info">⏳</span>
+                          <span>ICE em análise (possível bloqueio de STUN)</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {summary.overallStatus !== "success" && (
+                      <div className="mt-4 p-3 rounded-lg bg-warning/10 border border-warning/20">
+                        <p className="text-sm font-medium text-warning">
+                          🔁 Recomendado: trocar de rede ou desativar VPN
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Summary Section */}
             {summary && (
               <div className="animate-fade-in">
-                <Card className="border-2 border-diagnostic-border bg-diagnostic-bg/50">
+                <Card className="border-2 border-diagnostic-border bg-diagnostic-bg/50 rounded-xl">
                   <CardHeader>
                     <CardTitle className="text-2xl font-semibold flex items-center gap-2">
-                      📋 Resumo Final
+                      Resumo Final
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
