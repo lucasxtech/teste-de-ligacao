@@ -43,7 +43,7 @@ const statusConfig = {
   pending: {
     icon: Loader2,
     bgColor: "bg-info/5",
-    iconColor: "text-info animate-pulse",
+    iconColor: "text-info",
     borderColor: "border-info/20"
   }
 };
