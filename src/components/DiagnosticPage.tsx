@@ -161,136 +161,167 @@ export const DiagnosticPage = () => {
               );
             })}
 
-            {/* Diagnostic Overview Card */}
+            {/* Relatório Final */}
             {summary && (
-              <div className="animate-fade-in mb-8">
-                <Card className="border-2 border-primary/20 bg-primary/5 rounded-xl">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                      📋 Diagnóstico de chamadas
+              <div className="mt-8 space-y-6">
+                {/* Card do Diagnóstico Geral */}
+                <Card className="border-2 rounded-2xl bg-gradient-to-br from-background to-muted/20 shadow-diagnostic">
+                  <CardHeader className="text-center pb-4">
+                    <CardTitle className="text-2xl font-semibold text-foreground mb-2">
+                      📋 Relatório de Diagnóstico
                     </CardTitle>
+                    <p className="text-muted-foreground">
+                      Resumo dos testes realizados em {new Date(summary.timestamp).toLocaleString('pt-BR')}
+                    </p>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="space-y-2 text-sm">
-                      {summary.results.some(r => r.title.includes("HTTPS")) && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-success">✔️</span>
-                          <span>HTTPS e WebSockets OK</span>
+                  <CardContent className="space-y-6">
+                    <div className="grid gap-3">
+                      {summary.results.filter(result => result.category === 'browser').map(result => (
+                        <div key={result.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
+                          <span className="font-medium">{result.title}</span>
+                          <span className={`text-sm font-semibold ${
+                            result.status === 'success' ? 'text-success' : 
+                            result.status === 'warning' ? 'text-warning' : 'text-error'
+                          }`}>
+                            {result.status === 'success' ? '✅ OK' : 
+                             result.status === 'warning' ? '⚠️ Atenção' : '❌ Erro'}
+                          </span>
                         </div>
-                      )}
-                      {summary.results.some(r => r.title.includes("WebRTC")) && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-success">✔️</span>
-                          <span>WebRTC disponível</span>
+                      ))}
+                      {summary.results.filter(result => result.category === 'device').map(result => (
+                        <div key={result.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
+                          <span className="font-medium">{result.title}</span>
+                          <span className={`text-sm font-semibold ${
+                            result.status === 'success' ? 'text-success' : 
+                            result.status === 'warning' ? 'text-warning' : 'text-error'
+                          }`}>
+                            {result.status === 'success' ? '✅ OK' : 
+                             result.status === 'warning' ? '⚠️ Atenção' : '❌ Erro'}
+                          </span>
                         </div>
-                      )}
-                      {summary.results.some(r => r.title.includes("IP") && r.status === "error") && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-warning">⚠️</span>
-                          <span>IP e rede com restrição (VPN, firewall ou NAT)</span>
+                      ))}
+                      {summary.results.filter(result => result.category === 'network').map(result => (
+                        <div key={result.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
+                          <span className="font-medium">{result.title}</span>
+                          <span className={`text-sm font-semibold ${
+                            result.status === 'success' ? 'text-success' : 
+                            result.status === 'warning' ? 'text-warning' : 'text-error'
+                          }`}>
+                            {result.status === 'success' ? '✅ OK' : 
+                             result.status === 'warning' ? '⚠️ Atenção' : '❌ Erro'}
+                          </span>
                         </div>
-                      )}
-                      {summary.results.some(r => r.title.includes("Qualidade") && r.description?.includes("Não testado")) && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-warning">⚠️</span>
-                          <span>Qualidade da conexão não testada</span>
+                      ))}
+                      {summary.results.filter(result => result.category === 'webrtc').map(result => (
+                        <div key={result.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
+                          <span className="font-medium">{result.title}</span>
+                          <span className={`text-sm font-semibold ${
+                            result.status === 'success' ? 'text-success' : 
+                            result.status === 'warning' ? 'text-warning' : 'text-error'
+                          }`}>
+                            {result.status === 'success' ? '✅ OK' : 
+                             result.status === 'warning' ? '⚠️ Atenção' : '❌ Erro'}
+                          </span>
                         </div>
-                      )}
-                      {summary.results.some(r => r.title.includes("ICE") && r.status === "loading") && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-info">⏳</span>
-                          <span>ICE em análise (possível bloqueio de STUN)</span>
-                        </div>
-                      )}
+                      ))}
                     </div>
-                    
-                    {summary.overallStatus !== "success" && (
-                      <div className="mt-4 p-3 rounded-lg bg-warning/10 border border-warning/20">
-                        <p className="text-sm font-medium text-warning">
-                          🔁 Recomendado: trocar de rede ou desativar VPN
+
+                    {/* Status Geral */}
+                    <div className="mt-6 p-6 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/5">
+                      <div className="text-center">
+                        <h3 className="text-xl font-semibold mb-3">
+                          {summary.overallStatus === "success" 
+                            ? "🎉 Sistema Pronto para Chamadas"
+                            : summary.overallStatus === "warning"
+                            ? "⚠️ Atenção Necessária"
+                            : "❌ Problemas Detectados"}
+                        </h3>
+                        <p className="text-muted-foreground mb-4 leading-relaxed">
+                          {summary.overallStatus === "success" 
+                            ? "Todos os testes foram concluídos com sucesso! Seu sistema está otimizado para chamadas de alta qualidade."
+                            : summary.overallStatus === "warning"
+                            ? "Alguns problemas foram detectados que podem afetar a qualidade das chamadas. Recomendamos verificar as sugestões."
+                            : "Problemas críticos foram detectados. Entre em contato com o suporte técnico."}
                         </p>
+
+                        {/* Estatísticas dos Testes */}
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                          <div className="p-3 rounded-xl bg-success/10 border border-success/20">
+                            <div className="text-2xl font-bold text-success">
+                              {summary.results.filter(r => r.status === "success").length}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Sucessos</div>
+                          </div>
+                          <div className="p-3 rounded-xl bg-warning/10 border border-warning/20">
+                            <div className="text-2xl font-bold text-warning">
+                              {summary.results.filter(r => r.status === "warning").length}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Avisos</div>
+                          </div>
+                          <div className="p-3 rounded-xl bg-error/10 border border-error/20">
+                            <div className="text-2xl font-bold text-error">
+                              {summary.results.filter(r => r.status === "error").length}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Erros</div>
+                          </div>
+                        </div>
+
+                        {/* Recomendações */}
+                        {summary.overallStatus !== "success" && (
+                          <div className="mt-4 p-4 bg-muted/20 rounded-xl text-left">
+                            <h4 className="font-semibold text-sm mb-3 text-center">🔧 Recomendações:</h4>
+                            <ul className="text-sm text-muted-foreground space-y-2">
+                              {summary.results.some(r => r.title.includes("IP") && (r.status === "error" || r.status === "warning")) && (
+                                <li>• Desativar VPN ou proxy temporariamente</li>
+                              )}
+                              {summary.results.some(r => r.title.includes("Qualidade") && r.description?.includes("Não")) && (
+                                <li>• Verificar configurações de firewall e antivírus</li>
+                              )}
+                              {summary.results.some(r => r.status === "error" || r.status === "warning") && (
+                                <li>• Tentar acessar de uma rede diferente</li>
+                              )}
+                              <li>• Recarregar a página e testar novamente</li>
+                              {summary.overallStatus === "error" && (
+                                <li>• Entrar em contato com o suporte técnico</li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
-              </div>
-            )}
 
-            {/* Summary Section */}
-            {summary && (
-              <div className="animate-fade-in">
-                <Card className="border-2 border-diagnostic-border bg-diagnostic-bg/50 rounded-xl">
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-semibold flex items-center gap-2">
-                      Resumo Final
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      <div className="p-4 rounded-lg bg-success/10 border border-success/20">
-                        <div className="text-2xl font-bold text-success">
-                          {summary.results.filter(r => r.status === "success").length}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Testes com sucesso</div>
-                      </div>
-                      <div className="p-4 rounded-lg bg-warning/10 border border-warning/20">
-                        <div className="text-2xl font-bold text-warning">
-                          {summary.results.filter(r => r.status === "warning").length}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Avisos</div>
-                      </div>
-                      <div className="p-4 rounded-lg bg-error/10 border border-error/20">
-                        <div className="text-2xl font-bold text-error">
-                          {summary.results.filter(r => r.status === "error").length}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Erros</div>
-                      </div>
-                    </div>
+                {/* Botões de Ação */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    onClick={handleCopySummary}
+                    variant="outline"
+                    className="gap-2 rounded-xl px-6 py-3"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copiar Diagnóstico
+                  </Button>
+                  
+                  <Button
+                    onClick={handleSendToSupport}
+                    variant="default"
+                    className="gap-2 rounded-xl px-6 py-3 bg-gradient-primary hover:opacity-90"
+                  >
+                    <Send className="h-4 w-4" />
+                    Enviar para Suporte
+                  </Button>
+                </div>
 
-                    <div className="border-t pt-4">
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <Button
-                          onClick={handleCopySummary}
-                          variant="outline"
-                          className="flex items-center gap-2"
-                        >
-                          <Copy className="h-4 w-4" />
-                          Copiar Resumo
-                        </Button>
-                        <Button
-                          onClick={handleSendToSupport}
-                          className="flex items-center gap-2"
-                        >
-                          <Send className="h-4 w-4" />
-                          Enviar para Suporte
-                        </Button>
-                      </div>
-                    </div>
-
-                    {summary.overallStatus !== "success" && (
-                      <div className="mt-4 p-4 rounded-lg bg-info/10 border border-info/20">
-                        <h4 className="font-semibold text-info mb-2">💡 Recomendações:</h4>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {summary.results
-                            .filter(r => r.status === "error" || r.status === "warning")
-                            .map(result => (
-                              <li key={result.id}>
-                                • {result.title}: {result.description}
-                              </li>
-                            ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Call to Action Final */}
-                    <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/20 text-center">
-                      <p className="text-sm text-muted-foreground">
-                        {summary.overallStatus === "success" 
-                          ? "✅ Todos os testes foram concluídos com sucesso! Seu dispositivo está pronto para chamadas."
-                          : "⚠️ Alguns itens precisam de atenção. Se algo estiver em amarelo ou vermelho, envie este diagnóstico para o suporte."
-                        }
-                      </p>
-                    </div>
+                {/* Call to Action Final */}
+                <Card className="border-2 border-primary/20 bg-primary/5 rounded-2xl">
+                  <CardContent className="p-6 text-center">
+                    <p className="text-muted-foreground leading-relaxed">
+                      {summary.overallStatus === "success" 
+                        ? "✅ Todos os testes foram concluídos com sucesso! Seu dispositivo está pronto para chamadas de alta qualidade."
+                        : "⚠️ Alguns itens precisam de atenção. Se algo estiver em amarelo ou vermelho, envie este diagnóstico para o suporte técnico."
+                      }
+                    </p>
                   </CardContent>
                 </Card>
               </div>

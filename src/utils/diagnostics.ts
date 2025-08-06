@@ -47,8 +47,7 @@ export class DiagnosticTester {
       { id: "websockets", title: "WebSockets ativos", status: "loading", category: "browser" },
       { id: "ip", title: "IP detectado", status: "loading", category: "network" },
       { id: "connection", title: "Qualidade da conexão", status: "loading", category: "network" },
-      { id: "webrtc", title: "WebRTC disponível", status: "loading", category: "webrtc" },
-      { id: "ice", title: "ICE candidates", status: "loading", category: "webrtc" }
+      { id: "webrtc", title: "WebRTC disponível", status: "loading", category: "webrtc" }
     ];
 
     this.results = loadingTests;
@@ -274,56 +273,6 @@ export class DiagnosticTester {
         explanation: !rtcSupported ? "Seu navegador não suporta WebRTC, que é essencial para fazer chamadas. Atualize seu navegador ou use Chrome, Firefox ou Safari." : undefined,
         technical: `Status de chamadas em tempo real: ${rtcSupported ? '✅ OK' : '❌ Erro'}`
       });
-
-      if (rtcSupported) {
-        // Teste básico de ICE candidates
-        const pc = new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-        });
-
-        let candidatesReceived = 0;
-        const candidatePromise = new Promise((resolve) => {
-          pc.onicecandidate = (event) => {
-            if (event.candidate) {
-              candidatesReceived++;
-            } else {
-              resolve(candidatesReceived);
-            }
-          };
-        });
-
-        // Criar uma oferta para iniciar o processo ICE
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-
-        // Aguardar alguns segundos para coletar candidates
-        setTimeout(() => {
-          pc.close();
-        }, 3000);
-
-        await candidatePromise;
-
-        this.updateResult({
-          id: "ice",
-          title: "ICE candidates",
-          description: candidatesReceived > 0 ? "Rede liberada para chamadas" : "Possíveis restrições de rede",
-          value: `${candidatesReceived} candidate(s) encontrado(s)`,
-          status: candidatesReceived > 0 ? "success" : "warning",
-          category: "webrtc",
-          explanation: candidatesReceived === 0 ? "Não foram encontradas rotas de conexão. Isso pode acontecer devido a firewalls rigorosos ou configurações de rede restritivas. Verifique as configurações de firewall." : undefined,
-          technical: `Rede liberada para chamadas: ${candidatesReceived > 0 ? '✅ OK' : '⚠️ Limitado'}`
-        });
-      } else {
-        this.updateResult({
-          id: "ice",
-          title: "ICE candidates",
-          description: "WebRTC não disponível",
-          status: "error",
-          category: "webrtc",
-          explanation: "WebRTC não está disponível, impossibilitando a realização de chamadas.",
-          technical: "Rede liberada para chamadas: ❌ Erro"
-        });
-      }
     } catch (error) {
       this.updateResult({
         id: "webrtc",
