@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DiagnosticCard } from "./DiagnosticCard";
+import { SpeedTest } from "./SpeedTest";
 import { DiagnosticTester, DiagnosticResult, DiagnosticSummary } from "@/utils/diagnostics";
 import { ThemeToggle } from "./ThemeToggle";
 import { Play, Copy, Send, Activity } from "lucide-react";
@@ -102,6 +103,11 @@ export const DiagnosticPage = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Verifique se seu dispositivo está pronto para fazer e receber chamadas com qualidade.
           </p>
+        </div>
+
+        {/* Speed Test Section */}
+        <div className="mb-8">
+          <SpeedTest />
         </div>
 
         {/* Action Button */}
