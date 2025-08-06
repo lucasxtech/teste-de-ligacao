@@ -45,8 +45,6 @@ export class DiagnosticTester {
       { id: "permissions", title: "Permissão de microfone", status: "loading", category: "browser" },
       { id: "https", title: "HTTPS ativo", status: "loading", category: "browser" },
       { id: "websockets", title: "WebSockets ativos", status: "loading", category: "browser" },
-      { id: "ip", title: "IP detectado", status: "loading", category: "network" },
-      { id: "connection", title: "Qualidade da conexão", status: "loading", category: "network" },
       { id: "webrtc", title: "WebRTC disponível", status: "loading", category: "webrtc" }
     ];
 
@@ -58,9 +56,6 @@ export class DiagnosticTester {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     await this.testBrowser();
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    await this.testNetwork();
     await new Promise(resolve => setTimeout(resolve, 500));
     
     await this.testWebRTC();
@@ -191,73 +186,6 @@ export class DiagnosticTester {
     }
   }
 
-  private async testNetwork() {
-    try {
-      // Teste de IP (usando um serviço público)
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      
-      this.updateResult({
-        id: "ip",
-        title: "IP detectado",
-        description: "IP público obtido com sucesso",
-        value: data.ip,
-        status: "success",
-        category: "network",
-        technical: "Status de conectividade: ✅ OK"
-      });
-
-      // Teste de velocidade básico
-      const startTime = performance.now();
-      await fetch('https://www.google.com/favicon.ico');
-      const endTime = performance.now();
-      const latency = Math.round(endTime - startTime);
-
-      let connectionStatus = "success";
-      let connectionDesc = "Conexão estável";
-      
-      if (latency > 1000) {
-        connectionStatus = "warning";
-        connectionDesc = "Conexão lenta detectada";
-      } else if (latency > 2000) {
-        connectionStatus = "error";
-        connectionDesc = "Conexão muito lenta";
-      }
-
-      this.updateResult({
-        id: "connection",
-        title: "Qualidade da conexão",
-        description: connectionDesc,
-        value: `Latência: ${latency}ms`,
-        status: connectionStatus as any,
-        category: "network",
-        explanation: latency > 1000 ? "Latência alta detectada. Isso pode causar atrasos e cortes nas chamadas. Verifique sua conexão com a internet." : 
-                    latency > 500 ? "Latência moderada. Pode causar pequenos atrasos nas chamadas." : undefined,
-        technical: `Qualidade da conexão: ${latency < 500 ? '✅ Excelente' : latency < 1000 ? '⚠️ Moderada' : '❌ Ruim'}`
-      });
-
-    } catch (error) {
-      this.updateResult({
-        id: "ip",
-        title: "IP detectado",
-        description: "Erro ao obter informações de rede", 
-        status: "warning",
-        category: "network",
-        explanation: "Não foi possível obter o IP público. Isso pode acontecer devido a firewalls, VPNs ou problemas de conectividade. Tente desativar VPN ou acessar de outra rede.",
-        technical: "Status de conectividade: ⚠️ Limitado"
-      });
-      
-      this.updateResult({
-        id: "connection",
-        title: "Qualidade da conexão",
-        description: "Não foi possível testar a conexão",
-        status: "warning",
-        category: "network",
-        explanation: "Não foi possível testar a qualidade da conexão. Verifique se você está conectado à internet e tente novamente.",
-        technical: "Qualidade da conexão: ⚠️ Não testado"
-      });
-    }
-  }
 
   private async testWebRTC() {
     try {
@@ -316,7 +244,6 @@ export class DiagnosticTester {
     const categories = {
       device: "📱 DISPOSITIVOS",
       browser: "🌐 NAVEGADOR", 
-      network: "📡 REDE",
       webrtc: "📞 WEBRTC"
     };
 

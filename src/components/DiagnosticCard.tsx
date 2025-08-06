@@ -80,23 +80,22 @@ export const DiagnosticCard = ({
   return (
     <TooltipProvider>
       <Card className={cn(
-        "transition-all duration-300 hover:shadow-lg border-2 rounded-xl",
-        config.bgColor,
+        "transition-all duration-300 hover:shadow-lg border-2 rounded-2xl bg-gradient-to-br from-background to-muted/20 shadow-diagnostic",
         config.borderColor,
         status === "loading" && "animate-pulse",
         className
       )}>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-3 text-lg">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-xl font-semibold text-foreground mb-2 flex items-center justify-center gap-3">
             <div className={cn(
-              "p-2 rounded-full",
+              "p-3 rounded-full",
               status === "success" && "bg-success/10",
-              status === "error" && "bg-error/10",
+              status === "error" && "bg-error/10", 
               status === "warning" && "bg-warning/10",
               status === "loading" && "bg-muted/10",
               status === "pending" && "bg-info/10"
             )}>
-              <Icon className={cn("h-5 w-5", config.iconColor)} />
+              <Icon className={cn("h-6 w-6", config.iconColor)} />
             </div>
             <span className="flex-1">{title}</span>
             {(status === "error" || status === "warning" || status === "loading") && getSpecificTooltip() && (
@@ -115,21 +114,29 @@ export const DiagnosticCard = ({
         </CardHeader>
         
         {(displayDescription || value || technical) && (
-          <CardContent className="pt-0">
+          <CardContent className="space-y-4">
             {displayDescription && (
-              <p className="text-sm text-muted-foreground mb-2">
-                {displayDescription}
-              </p>
+              <div className="text-center">
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  {displayDescription}
+                </p>
+              </div>
             )}
-            {technical && (
-              <p className="text-xs text-muted-foreground/80 mb-2 font-mono">
-                {technical}
-              </p>
-            )}
+            
             {value && (
-              <p className="text-sm font-mono bg-muted/30 px-2 py-1 rounded">
-                {value}
-              </p>
+              <div className="p-4 bg-muted/20 rounded-xl text-center">
+                <div className="text-2xl font-bold text-primary mb-1">
+                  {value}
+                </div>
+              </div>
+            )}
+            
+            {technical && (
+              <div className="p-3 bg-muted/10 rounded-xl text-center">
+                <p className="text-sm text-muted-foreground font-medium">
+                  {technical}
+                </p>
+              </div>
             )}
           </CardContent>
         )}

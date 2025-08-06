@@ -78,7 +78,6 @@ export const DiagnosticPage = () => {
   const categories = [
     { id: "device", title: "Dispositivos", icon: "🎤" },
     { id: "browser", title: "Navegador e Sistema", icon: "🔧" },
-    { id: "network", title: "Rede", icon: "📶" },
     { id: "webrtc", title: "WebRTC", icon: "☎️" }
   ];
 
@@ -195,18 +194,6 @@ export const DiagnosticPage = () => {
                         </div>
                       ))}
                       {summary.results.filter(result => result.category === 'device').map(result => (
-                        <div key={result.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
-                          <span className="font-medium">{result.title}</span>
-                          <span className={`text-sm font-semibold ${
-                            result.status === 'success' ? 'text-success' : 
-                            result.status === 'warning' ? 'text-warning' : 'text-error'
-                          }`}>
-                            {result.status === 'success' ? '✅ OK' : 
-                             result.status === 'warning' ? '⚠️ Atenção' : '❌ Erro'}
-                          </span>
-                        </div>
-                      ))}
-                      {summary.results.filter(result => result.category === 'network').map(result => (
                         <div key={result.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
                           <span className="font-medium">{result.title}</span>
                           <span className={`text-sm font-semibold ${
