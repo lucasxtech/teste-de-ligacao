@@ -5,7 +5,7 @@ import { DiagnosticCard } from "./DiagnosticCard";
 import { SpeedTest } from "./SpeedTest";
 import { DiagnosticTester, DiagnosticResult, DiagnosticSummary } from "@/utils/diagnostics";
 import { ThemeToggle } from "./ThemeToggle";
-import { Play, Copy, Send, Activity } from "lucide-react";
+import { Play, Copy, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export const DiagnosticPage = () => {
@@ -56,20 +56,6 @@ export const DiagnosticPage = () => {
     }
   };
 
-  const handleSendToSupport = () => {
-    if (summary) {
-      const tester = new DiagnosticTester();
-      const formattedSummary = tester.formatSummaryForSupport(summary);
-      const subject = "Diagnóstico de Chamadas - Suporte";
-      const body = encodeURIComponent(formattedSummary);
-      window.open(`mailto:suporte@empresa.com?subject=${subject}&body=${body}`);
-      
-      toast({
-        title: "Email aberto",
-        description: "O cliente de email foi aberto com o diagnóstico.",
-      });
-    }
-  };
 
   const getResultsByCategory = (category: string) => {
     return results.filter(result => result.category === category);
@@ -285,8 +271,8 @@ export const DiagnosticPage = () => {
                   </CardContent>
                 </Card>
 
-                {/* Botões de Ação */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                {/* Botão de Ação */}
+                <div className="flex justify-center">
                   <Button
                     onClick={handleCopySummary}
                     variant="outline"
@@ -294,15 +280,6 @@ export const DiagnosticPage = () => {
                   >
                     <Copy className="h-4 w-4" />
                     Copiar Diagnóstico
-                  </Button>
-                  
-                  <Button
-                    onClick={handleSendToSupport}
-                    variant="default"
-                    className="gap-2 rounded-xl px-6 py-3 bg-gradient-primary hover:opacity-90"
-                  >
-                    <Send className="h-4 w-4" />
-                    Enviar para Suporte
                   </Button>
                 </div>
 
