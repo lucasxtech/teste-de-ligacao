@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 // @ts-ignore - No types available for this library
-import CloudflareSpeedTest from "@cloudflare/speedtest";
+import SpeedTestLib from "@cloudflare/speedtest";
 
 interface SpeedTestResults {
   downloadSpeed: number;
@@ -26,7 +26,7 @@ export const SpeedTest = () => {
     
     try {
       // Create Cloudflare SpeedTest instance
-      const speedtest = new CloudflareSpeedTest({
+      const speedtest = new SpeedTestLib({
         autoStart: false, // We'll start manually
         measurements: [
           { type: 'latency', numPackets: 10 },
