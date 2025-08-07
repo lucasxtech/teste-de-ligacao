@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+// @ts-ignore - No types available for this library
+import CloudflareSpeedTest from "@cloudflare/speedtest";
 
 interface SpeedTestResults {
   downloadSpeed: number;
@@ -20,47 +22,84 @@ export const SpeedTest = () => {
   const runSpeedTest = async () => {
     setIsRunning(true);
     setResults(null);
+    setCurrentTest("🔄 Iniciando teste...");
     
     try {
-      setCurrentTest("🔄 Iniciando teste...");
-      
-      // Simulated test with Cloudflare speedtest logic
-      // Note: @cloudflare/speedtest might need specific implementation
-      
-      setCurrentTest("📥 Medindo download...");
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setCurrentTest("📤 Medindo upload...");
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setCurrentTest("📊 Calculando latência e jitter...");
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock results for demonstration
-      const mockResults: SpeedTestResults = {
-        downloadSpeed: Math.random() * 100 + 10,
-        uploadSpeed: Math.random() * 50 + 5,
-        latency: Math.random() * 50 + 10,
-        jitter: Math.random() * 10 + 1,
-        packetLoss: Math.random() * 2
-      };
-      
-      setCurrentTest("✅ Teste concluído!");
-      setResults(mockResults);
-      
-      toast({
-        title: "Teste de velocidade concluído",
-        description: "Todos os parâmetros de rede foram medidos com sucesso.",
+      // Create Cloudflare SpeedTest instance
+      const speedtest = new CloudflareSpeedTest({
+        autoStart: false, // We'll start manually
+        measurements: [
+          { type: 'latency', numPackets: 10 },
+          { type: 'download', bytes: 1e5, count: 5 },
+          { type: 'download', bytes: 1e6, count: 5 },
+          { type: 'upload', bytes: 1e5, count: 5 },
+          { type: 'upload', bytes: 1e6, count: 3 },
+        ]
       });
+
+      // Set up event handlers
+      speedtest.onResultsChange = ({ type }) => {
+        const results = speedtest.results;
+        
+        if (type === 'latency') {
+          setCurrentTest("📊 Medindo latência...");
+        } else if (type === 'download') {
+          setCurrentTest("📥 Medindo velocidade de download...");
+        } else if (type === 'upload') {
+          setCurrentTest("📤 Medindo velocidade de upload...");
+        }
+      };
+
+      speedtest.onFinish = (results) => {
+        const summary = results.getSummary();
+        
+        // Convert from bps to Mbps and extract values
+        const downloadSpeedMbps = summary.download ? (summary.download / 1e6) : 0;
+        const uploadSpeedMbps = summary.upload ? (summary.upload / 1e6) : 0;
+        const latencyMs = results.getUnloadedLatency() || 0;
+        const jitterMs = results.getUnloadedJitter() || 0;
+        const packetLossPercent = (results.getPacketLoss() || 0) * 100;
+
+        const speedTestResults: SpeedTestResults = {
+          downloadSpeed: downloadSpeedMbps,
+          uploadSpeed: uploadSpeedMbps,
+          latency: latencyMs,
+          jitter: jitterMs,
+          packetLoss: packetLossPercent
+        };
+
+        setCurrentTest("✅ Teste concluído!");
+        setResults(speedTestResults);
+        setIsRunning(false);
+
+        toast({
+          title: "Teste de velocidade concluído",
+          description: "Medições reais da sua conexão foram obtidas com sucesso.",
+        });
+      };
+
+      speedtest.onError = (error) => {
+        console.error('Erro no teste de velocidade:', error);
+        toast({
+          title: "Erro no teste de velocidade", 
+          description: "Não foi possível completar o teste. Verifique sua conexão.",
+          variant: "destructive",
+        });
+        setCurrentTest("");
+        setIsRunning(false);
+      };
+
+      // Start the test
+      speedtest.play();
       
     } catch (error) {
+      console.error('Erro ao inicializar teste:', error);
       toast({
         title: "Erro no teste de velocidade",
-        description: "Não foi possível completar o teste. Tente novamente.",
+        description: "Não foi possível inicializar o teste. Tente novamente.",
         variant: "destructive",
       });
       setCurrentTest("");
-    } finally {
       setIsRunning(false);
     }
   };
