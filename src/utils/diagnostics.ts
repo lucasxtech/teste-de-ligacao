@@ -277,9 +277,15 @@ export class DiagnosticTester {
       });
     }
 
-    // Teste de permissões
+    // Teste de permissões com timeout
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), 10000); // 10 segundos timeout
+      });
+
+      const getUserMediaPromise = navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      const stream = await Promise.race([getUserMediaPromise, timeoutPromise]) as MediaStream;
       stream.getTracks().forEach(track => track.stop());
       
       this.updateResult({
@@ -290,14 +296,28 @@ export class DiagnosticTester {
         category: "browser",
         technical: "Status de acesso ao microfone: ✅ OK"
       });
-    } catch (error) {
+    } catch (error: any) {
+      let description = "Permissão negada ou erro ao acessar microfone";
+      let explanation = "O navegador bloqueou o acesso ao microfone. Clique no ícone de cadeado na barra de endereços e permita o acesso ao microfone.";
+      
+      if (error.message === 'timeout') {
+        description = "Tempo limite para permissão esgotado";
+        explanation = "A solicitação de permissão demorou muito para ser respondida. Recarregue a página e permita o acesso rapidamente.";
+      } else if (error.name === 'NotAllowedError') {
+        description = "Permissão negada pelo usuário";
+        explanation = "Você negou o acesso ao microfone. Para fazer chamadas, é necessário permitir o acesso.";
+      } else if (error.name === 'NotFoundError') {
+        description = "Nenhum microfone encontrado";
+        explanation = "Não foi possível encontrar um microfone. Verifique se há um microfone conectado.";
+      }
+      
       this.updateResult({
         id: "permissions",
         title: "Permissão de microfone",
-        description: "Permissão negada ou erro ao acessar microfone",
+        description,
         status: "error",
         category: "browser",
-        explanation: "O navegador bloqueou o acesso ao microfone. Clique no ícone de cadeado na barra de endereços e permita o acesso ao microfone.",
+        explanation,
         technical: "Status de acesso ao microfone: ❌ Erro"
       });
     }
