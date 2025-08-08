@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DiagnosticCard } from "./DiagnosticCard";
@@ -16,37 +16,54 @@ export const DiagnosticPage = () => {
   const [speedTestResults, setSpeedTestResults] = useState<SpeedTestResults | null>(null);
   const [testerInstance, setTesterInstance] = useState<DiagnosticTester | null>(null);
   const { toast } = useToast();
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const handleStartDiagnostic = async () => {
-    setIsRunning(true);
-    setResults([]);
-    setSummary(null);
-
-    const tester = new DiagnosticTester((updatedResults) => {
-      setResults([...updatedResults]);
-    });
-    setTesterInstance(tester);
-
-    // Se já temos resultados do teste de velocidade, inclua no diagnóstico
-    if (speedTestResults) {
-      tester.setSpeedTestResults(speedTestResults);
-    }
-
     try {
-      const finalResults = await tester.runAllTests();
-      setResults(finalResults);
-      setSummary(tester.generateSummary());
-      
-      toast({
-        title: "Diagnóstico concluído",
-        description: "Todos os testes foram executados com sucesso.",
+      setIsRunning(true);
+      setResults([]);
+      setSummary(null);
+
+      const tester = new DiagnosticTester((updatedResults) => {
+        if (isMountedRef.current) {
+          setResults([...updatedResults]);
+        }
       });
+      setTesterInstance(tester);
+
+      // Se já temos resultados do teste de velocidade, inclua no diagnóstico
+      if (speedTestResults) {
+        tester.setSpeedTestResults(speedTestResults);
+      }
+
+      const finalResults = await tester.runAllTests();
+      
+      if (isMountedRef.current) {
+        setResults(finalResults);
+        setSummary(tester.generateSummary());
+        
+        toast({
+          title: "Diagnóstico concluído",
+          description: "Todos os testes foram executados com sucesso.",
+        });
+      }
     } catch (error) {
+      console.error("Erro no diagnóstico:", error);
       toast({
         title: "Erro no diagnóstico",
-        description: "Ocorreu um erro durante a execução dos testes.",
+        description: "Ocorreu um erro durante a execução dos testes. Tente novamente.",
         variant: "destructive",
       });
+      
+      // Garantir que o estado não fica em loop
+      setResults([]);
+      setSummary(null);
     } finally {
       setIsRunning(false);
     }
@@ -57,12 +74,17 @@ export const DiagnosticPage = () => {
     
     // Se o teste de diagnóstico já foi executado, adicionar os resultados de velocidade
     if (testerInstance && results.length > 0) {
-      testerInstance.setSpeedTestResults(speedResults);
-      const updatedResults = testerInstance.runAllTests();
-      updatedResults.then((finalResults) => {
-        setResults(finalResults);
-        setSummary(testerInstance.generateSummary());
-      });
+      try {
+        testerInstance.setSpeedTestResults(speedResults);
+        testerInstance.runAllTests().then((finalResults) => {
+          setResults(finalResults);
+          setSummary(testerInstance.generateSummary());
+        }).catch((error) => {
+          console.error("Erro ao atualizar resultados de velocidade:", error);
+        });
+      } catch (error) {
+        console.error("Erro ao integrar teste de velocidade:", error);
+      }
     }
 
     toast({
