@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 // @ts-ignore - No types available for this library
 import SpeedTestLib from "@cloudflare/speedtest";
 
-interface SpeedTestResults {
+export interface SpeedTestResults {
   downloadSpeed: number;
   uploadSpeed: number;
   latency: number;
@@ -13,7 +13,11 @@ interface SpeedTestResults {
   packetLoss: number;
 }
 
-export const SpeedTest = () => {
+interface SpeedTestProps {
+  onTestComplete?: (results: SpeedTestResults) => void;
+}
+
+export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<SpeedTestResults | null>(null);
   const [currentTest, setCurrentTest] = useState<string>("");
@@ -71,6 +75,11 @@ export const SpeedTest = () => {
         setCurrentTest("✅ Teste concluído!");
         setResults(speedTestResults);
         setIsRunning(false);
+
+        // Chamar callback se fornecido
+        if (onTestComplete) {
+          onTestComplete(speedTestResults);
+        }
 
         toast({
           title: "Teste de velocidade concluído",

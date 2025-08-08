@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DiagnosticCard } from "./DiagnosticCard";
 import { SpeedTest } from "./SpeedTest";
 import { DiagnosticTester, DiagnosticResult, DiagnosticSummary } from "@/utils/diagnostics";
+import { SpeedTestResults } from "./SpeedTest";
 import { ThemeToggle } from "./ThemeToggle";
 import { Play, Copy, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +13,8 @@ export const DiagnosticPage = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<DiagnosticResult[]>([]);
   const [summary, setSummary] = useState<DiagnosticSummary | null>(null);
+  const [speedTestResults, setSpeedTestResults] = useState<SpeedTestResults | null>(null);
+  const [testerInstance, setTesterInstance] = useState<DiagnosticTester | null>(null);
   const { toast } = useToast();
 
   const handleStartDiagnostic = async () => {
@@ -22,6 +25,12 @@ export const DiagnosticPage = () => {
     const tester = new DiagnosticTester((updatedResults) => {
       setResults([...updatedResults]);
     });
+    setTesterInstance(tester);
+
+    // Se já temos resultados do teste de velocidade, inclua no diagnóstico
+    if (speedTestResults) {
+      tester.setSpeedTestResults(speedTestResults);
+    }
 
     try {
       const finalResults = await tester.runAllTests();
@@ -41,6 +50,25 @@ export const DiagnosticPage = () => {
     } finally {
       setIsRunning(false);
     }
+  };
+
+  const handleSpeedTestComplete = (speedResults: SpeedTestResults) => {
+    setSpeedTestResults(speedResults);
+    
+    // Se o teste de diagnóstico já foi executado, adicionar os resultados de velocidade
+    if (testerInstance && results.length > 0) {
+      testerInstance.setSpeedTestResults(speedResults);
+      const updatedResults = testerInstance.runAllTests();
+      updatedResults.then((finalResults) => {
+        setResults(finalResults);
+        setSummary(testerInstance.generateSummary());
+      });
+    }
+
+    toast({
+      title: "Teste de velocidade incluído no relatório",
+      description: "Os dados de conexão foram adicionados ao diagnóstico.",
+    });
   };
 
   const handleCopySummary = () => {
@@ -64,6 +92,7 @@ export const DiagnosticPage = () => {
   const categories = [
     { id: "device", title: "Dispositivos", icon: "🎤" },
     { id: "browser", title: "Navegador e Sistema", icon: "🔧" },
+    { id: "network", title: "Conexão de Rede", icon: "🌐" },
     { id: "webrtc", title: "WebRTC", icon: "☎️" }
   ];
 
@@ -92,7 +121,7 @@ export const DiagnosticPage = () => {
 
         {/* Speed Test Section */}
         <div className="mb-8">
-          <SpeedTest />
+          <SpeedTest onTestComplete={handleSpeedTestComplete} />
         </div>
 
         {/* Action Button */}
@@ -180,6 +209,18 @@ export const DiagnosticPage = () => {
                         </div>
                       ))}
                       {summary.results.filter(result => result.category === 'device').map(result => (
+                        <div key={result.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
+                          <span className="font-medium">{result.title}</span>
+                          <span className={`text-sm font-semibold ${
+                            result.status === 'success' ? 'text-success' : 
+                            result.status === 'warning' ? 'text-warning' : 'text-error'
+                          }`}>
+                            {result.status === 'success' ? '✅ OK' : 
+                             result.status === 'warning' ? '⚠️ Atenção' : '❌ Erro'}
+                          </span>
+                        </div>
+                      ))}
+                      {summary.results.filter(result => result.category === 'network').map(result => (
                         <div key={result.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl">
                           <span className="font-medium">{result.title}</span>
                           <span className={`text-sm font-semibold ${

@@ -9,6 +9,14 @@ export interface DiagnosticResult {
   technical?: string;
 }
 
+export interface SpeedTestResults {
+  downloadSpeed: number;
+  uploadSpeed: number;
+  latency: number;
+  jitter: number;
+  packetLoss: number;
+}
+
 export interface DiagnosticSummary {
   timestamp: string;
   userAgent: string;
@@ -19,9 +27,15 @@ export interface DiagnosticSummary {
 export class DiagnosticTester {
   private results: DiagnosticResult[] = [];
   private onUpdate?: (results: DiagnosticResult[]) => void;
+  private speedTestResults?: SpeedTestResults;
 
   constructor(onUpdate?: (results: DiagnosticResult[]) => void) {
     this.onUpdate = onUpdate;
+  }
+
+  setSpeedTestResults(speedResults: SpeedTestResults) {
+    this.speedTestResults = speedResults;
+    this.processSpeedTestResults();
   }
 
   private updateResult(result: DiagnosticResult) {
@@ -60,7 +74,110 @@ export class DiagnosticTester {
     
     await this.testWebRTC();
 
+    // Adicionar resultados do teste de velocidade se disponíveis
+    if (this.speedTestResults) {
+      this.processSpeedTestResults();
+    }
+
     return this.results;
+  }
+
+  private processSpeedTestResults() {
+    if (!this.speedTestResults) return;
+
+    const { downloadSpeed, uploadSpeed, latency, jitter, packetLoss } = this.speedTestResults;
+
+    // Análise da velocidade de download
+    let downloadStatus: "success" | "warning" | "error" = "success";
+    let downloadDescription = `${downloadSpeed.toFixed(2)} Mbps`;
+    let downloadExplanation = "";
+
+    if (downloadSpeed < 5) {
+      downloadStatus = "error";
+      downloadExplanation = "Velocidade muito baixa para chamadas de vídeo. Recomendamos pelo menos 5 Mbps.";
+    } else if (downloadSpeed < 15) {
+      downloadStatus = "warning";
+      downloadExplanation = "Velocidade adequada para chamadas básicas, mas pode haver limitações em vídeo HD.";
+    }
+
+    this.updateResult({
+      id: "download-speed",
+      title: "Velocidade de Download",
+      description: downloadDescription,
+      status: downloadStatus,
+      category: "network",
+      explanation: downloadExplanation,
+      technical: `Download: ${downloadSpeed.toFixed(2)} Mbps - ${downloadStatus === "success" ? "✅ Excelente" : downloadStatus === "warning" ? "⚠️ Adequado" : "❌ Insuficiente"}`
+    });
+
+    // Análise da velocidade de upload
+    let uploadStatus: "success" | "warning" | "error" = "success";
+    let uploadDescription = `${uploadSpeed.toFixed(2)} Mbps`;
+    let uploadExplanation = "";
+
+    if (uploadSpeed < 1) {
+      uploadStatus = "error";
+      uploadExplanation = "Velocidade de upload muito baixa. Pode causar problemas graves durante chamadas.";
+    } else if (uploadSpeed < 3) {
+      uploadStatus = "warning";
+      uploadExplanation = "Velocidade de upload adequada para chamadas básicas, mas limitada para vídeo HD.";
+    }
+
+    this.updateResult({
+      id: "upload-speed",
+      title: "Velocidade de Upload",
+      description: uploadDescription,
+      status: uploadStatus,
+      category: "network",
+      explanation: uploadExplanation,
+      technical: `Upload: ${uploadSpeed.toFixed(2)} Mbps - ${uploadStatus === "success" ? "✅ Excelente" : uploadStatus === "warning" ? "⚠️ Adequado" : "❌ Insuficiente"}`
+    });
+
+    // Análise da latência
+    let latencyStatus: "success" | "warning" | "error" = "success";
+    let latencyDescription = `${latency.toFixed(2)} ms`;
+    let latencyExplanation = "";
+
+    if (latency > 150) {
+      latencyStatus = "error";
+      latencyExplanation = "Latência muito alta. Pode causar atrasos perceptíveis durante as chamadas.";
+    } else if (latency > 100) {
+      latencyStatus = "warning";
+      latencyExplanation = "Latência moderada. Pode haver pequenos atrasos durante as chamadas.";
+    }
+
+    this.updateResult({
+      id: "latency",
+      title: "Latência",
+      description: latencyDescription,
+      status: latencyStatus,
+      category: "network",
+      explanation: latencyExplanation,
+      technical: `Latência: ${latency.toFixed(2)} ms - ${latencyStatus === "success" ? "✅ Excelente" : latencyStatus === "warning" ? "⚠️ Moderado" : "❌ Alto"}`
+    });
+
+    // Análise da perda de pacotes
+    let packetLossStatus: "success" | "warning" | "error" = "success";
+    let packetLossDescription = `${packetLoss.toFixed(2)}%`;
+    let packetLossExplanation = "";
+
+    if (packetLoss > 3) {
+      packetLossStatus = "error";
+      packetLossExplanation = "Perda de pacotes alta. Pode causar cortes de áudio/vídeo durante as chamadas.";
+    } else if (packetLoss > 1) {
+      packetLossStatus = "warning";
+      packetLossExplanation = "Perda de pacotes moderada. Pode afetar ocasionalmente a qualidade das chamadas.";
+    }
+
+    this.updateResult({
+      id: "packet-loss",
+      title: "Perda de Pacotes",
+      description: packetLossDescription,
+      status: packetLossStatus,
+      category: "network",
+      explanation: packetLossExplanation,
+      technical: `Perda: ${packetLoss.toFixed(2)}% - ${packetLossStatus === "success" ? "✅ Baixa" : packetLossStatus === "warning" ? "⚠️ Moderada" : "❌ Alta"}`
+    });
   }
 
   private async testDevices() {
@@ -243,7 +360,8 @@ export class DiagnosticTester {
 
     const categories = {
       device: "📱 DISPOSITIVOS",
-      browser: "🌐 NAVEGADOR", 
+      browser: "🌐 NAVEGADOR",
+      network: "🌐 CONEXÃO",
       webrtc: "📞 WEBRTC"
     };
 
