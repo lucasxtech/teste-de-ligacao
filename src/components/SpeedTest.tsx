@@ -29,44 +29,57 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
     setCurrentTest("🔄 Iniciando teste...");
     
     try {
-      // Create Cloudflare SpeedTest instance
+      // Create Cloudflare SpeedTest instance with more robust configuration
       const speedtest = new SpeedTestLib({
-        autoStart: false, // We'll start manually
+        autoStart: false,
         measurements: [
-          { type: 'latency', numPackets: 10 },
-          { type: 'download', bytes: 1e5, count: 5 },
-          { type: 'download', bytes: 1e6, count: 5 },
-          { type: 'upload', bytes: 1e5, count: 5 },
-          { type: 'upload', bytes: 1e6, count: 3 },
+          { type: 'latency', numPackets: 20 }, // More packets for accuracy
+          { type: 'download', bytes: 1e6, count: 8 }, // Larger tests
+          { type: 'download', bytes: 2.5e6, count: 6 },
+          { type: 'upload', bytes: 1e6, count: 6 },
+          { type: 'upload', bytes: 2.5e6, count: 4 },
+          { type: 'packetLoss', numPackets: 25 }, // Add packet loss test
         ]
       });
 
-      // Set up event handlers
-      speedtest.onResultsChange = ({ type }) => {
-        const results = speedtest.results;
+      // Set up event handlers with more detailed progress tracking
+      speedtest.onResultsChange = ({ type }: any) => {
+        console.log('Test progress:', type);
         
         if (type === 'latency') {
-          setCurrentTest("📊 Medindo latência...");
+          setCurrentTest("📊 Medindo latência da rede...");
         } else if (type === 'download') {
-          setCurrentTest("📥 Medindo velocidade de download...");
+          setCurrentTest("📥 Testando velocidade real de download...");
         } else if (type === 'upload') {
-          setCurrentTest("📤 Medindo velocidade de upload...");
+          setCurrentTest("📤 Testando velocidade real de upload...");
+        } else if (type === 'packetLoss') {
+          setCurrentTest("📦 Verificando perda de pacotes...");
         }
       };
 
       speedtest.onFinish = (results) => {
         console.log('SpeedTest Raw Results:', results);
-        const summary = results.getSummary();
-        console.log('SpeedTest Summary:', summary);
         
-        // Convert from bps to Mbps and extract values
-        const downloadSpeedMbps = summary.download ? (summary.download / 1e6) : 0;
-        const uploadSpeedMbps = summary.upload ? (summary.upload / 1e6) : 0;
+        // Use more accurate methods to get real-time results
+        const downloadBps = results.getDownloadBandwidth() || 0;
+        const uploadBps = results.getUploadBandwidth() || 0;
         const latencyMs = results.getUnloadedLatency() || 0;
         const jitterMs = results.getUnloadedJitter() || 0;
         const packetLossPercent = (results.getPacketLoss() || 0) * 100;
         
-        console.log('Processed Results:', {
+        console.log('Raw bandwidth values:', {
+          downloadBps,
+          uploadBps,
+          latencyMs,
+          jitterMs,
+          packetLossPercent
+        });
+        
+        // Convert to Mbps properly
+        const downloadSpeedMbps = downloadBps / 1000000; // Convert bps to Mbps
+        const uploadSpeedMbps = uploadBps / 1000000; // Convert bps to Mbps
+        
+        console.log('Final processed values:', {
           downloadSpeedMbps,
           uploadSpeedMbps,
           latencyMs,
