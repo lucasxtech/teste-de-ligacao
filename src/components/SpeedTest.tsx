@@ -55,7 +55,9 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
       };
 
       speedtest.onFinish = (results) => {
+        console.log('SpeedTest Raw Results:', results);
         const summary = results.getSummary();
+        console.log('SpeedTest Summary:', summary);
         
         // Convert from bps to Mbps and extract values
         const downloadSpeedMbps = summary.download ? (summary.download / 1e6) : 0;
@@ -63,6 +65,14 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
         const latencyMs = results.getUnloadedLatency() || 0;
         const jitterMs = results.getUnloadedJitter() || 0;
         const packetLossPercent = (results.getPacketLoss() || 0) * 100;
+        
+        console.log('Processed Results:', {
+          downloadSpeedMbps,
+          uploadSpeedMbps,
+          latencyMs,
+          jitterMs,
+          packetLossPercent
+        });
 
         const speedTestResults: SpeedTestResults = {
           downloadSpeed: downloadSpeedMbps,
