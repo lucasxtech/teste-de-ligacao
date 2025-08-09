@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 // @ts-ignore - No types available for this library
 import SpeedTestLib from "@cloudflare/speedtest";
@@ -17,96 +19,163 @@ interface SpeedTestProps {
   onTestComplete?: (results: SpeedTestResults) => void;
 }
 
+type TestMode = 'fast' | 'complete';
+
 export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<SpeedTestResults | null>(null);
   const [currentTest, setCurrentTest] = useState<string>("");
+  const [testMode, setTestMode] = useState<TestMode>('fast');
+  const [progress, setProgress] = useState(0);
+  const [testDetails, setTestDetails] = useState<{
+    duration: number;
+    bytesTransferred: number;
+    samples: number;
+  } | null>(null);
   const { toast } = useToast();
+
+  const getTestConfig = (mode: TestMode) => {
+    if (mode === 'complete') {
+      return {
+        measurements: [
+          { type: 'latency' as const, numPackets: 30 },
+          { type: 'download' as const, bytes: 5e6, count: 12 },
+          { type: 'download' as const, bytes: 10e6, count: 8 },
+          { type: 'upload' as const, bytes: 2e6, count: 10 },
+          { type: 'upload' as const, bytes: 5e6, count: 6 },
+          { type: 'packetLoss' as const, numPackets: 50 },
+        ] as any[],
+        estimatedDuration: "≈30s"
+      };
+    }
+    
+    return {
+      measurements: [
+        { type: 'latency' as const, numPackets: 15 },
+        { type: 'download' as const, bytes: 2e6, count: 6 },
+        { type: 'download' as const, bytes: 5e6, count: 4 },
+        { type: 'upload' as const, bytes: 1e6, count: 6 },
+        { type: 'upload' as const, bytes: 2e6, count: 3 },
+        { type: 'packetLoss' as const, numPackets: 20 },
+      ] as any[],
+      estimatedDuration: "≈15s"
+    };
+  };
 
   const runSpeedTest = async () => {
     setIsRunning(true);
     setResults(null);
-    setCurrentTest("🔄 Iniciando teste...");
+    setProgress(0);
+    setTestDetails(null);
+    setCurrentTest("🔄 Iniciando teste real da rede...");
+    
+    const startTime = Date.now();
+    let bytesTransferred = 0;
+    let totalSamples = 0;
     
     try {
-      // Create Cloudflare SpeedTest instance with more robust configuration
+      const config = getTestConfig(testMode);
+      
+      // Create Cloudflare SpeedTest instance with selected configuration
       const speedtest = new SpeedTestLib({
         autoStart: false,
-        measurements: [
-          { type: 'latency', numPackets: 20 }, // More packets for accuracy
-          { type: 'download', bytes: 1e6, count: 8 }, // Larger tests
-          { type: 'download', bytes: 2.5e6, count: 6 },
-          { type: 'upload', bytes: 1e6, count: 6 },
-          { type: 'upload', bytes: 2.5e6, count: 4 },
-          { type: 'packetLoss', numPackets: 25 }, // Add packet loss test
-        ]
+        measurements: config.measurements
       });
 
-      // Set up event handlers with more detailed progress tracking
+      // Track progress through different test phases
+      let currentPhase = 0;
+      const totalPhases = 4; // latency, download, upload, packetLoss
+
       speedtest.onResultsChange = ({ type }: any) => {
-        console.log('Test progress:', type);
+        console.log(`[${new Date().toISOString()}] Fase do teste:`, type);
         
         if (type === 'latency') {
-          setCurrentTest("📊 Medindo latência da rede...");
+          currentPhase = 1;
+          setCurrentTest("📊 Medindo latência real da rede...");
+          setProgress(25);
         } else if (type === 'download') {
+          currentPhase = 2;
           setCurrentTest("📥 Testando velocidade real de download...");
+          setProgress(50);
         } else if (type === 'upload') {
+          currentPhase = 3;
           setCurrentTest("📤 Testando velocidade real de upload...");
+          setProgress(75);
         } else if (type === 'packetLoss') {
+          currentPhase = 4;
           setCurrentTest("📦 Verificando perda de pacotes...");
+          setProgress(90);
         }
       };
 
       speedtest.onFinish = (results) => {
-        console.log('SpeedTest Raw Results:', results);
+        const endTime = Date.now();
+        const duration = Math.round((endTime - startTime) / 1000);
         
-        // Use more accurate methods to get real-time results
+        console.log(`[${new Date().toISOString()}] Teste concluído em ${duration}s`);
+        console.log('Resultados brutos da Cloudflare:', results);
+        
+        // Use métodos específicos para obter os resultados mais precisos
         const downloadBps = results.getDownloadBandwidth() || 0;
         const uploadBps = results.getUploadBandwidth() || 0;
         const latencyMs = results.getUnloadedLatency() || 0;
         const jitterMs = results.getUnloadedJitter() || 0;
         const packetLossPercent = (results.getPacketLoss() || 0) * 100;
         
-        console.log('Raw bandwidth values:', {
-          downloadBps,
-          uploadBps,
-          latencyMs,
-          jitterMs,
-          packetLossPercent
+        // Calcular bytes transferidos (estimativa baseada na configuração)
+        const config = getTestConfig(testMode);
+        bytesTransferred = config.measurements.reduce((total, measurement) => {
+          if (measurement.type === 'download' || measurement.type === 'upload') {
+            return total + (measurement.bytes * measurement.count);
+          }
+          return total;
+        }, 0);
+        
+        totalSamples = config.measurements.reduce((total, measurement) => {
+          return total + (measurement.count || measurement.numPackets || 0);
+        }, 0);
+        
+        console.log('Valores processados:', {
+          downloadBps: downloadBps.toFixed(0),
+          uploadBps: uploadBps.toFixed(0),
+          latencyMs: latencyMs.toFixed(2),
+          jitterMs: jitterMs.toFixed(2),
+          packetLossPercent: packetLossPercent.toFixed(4),
+          duration,
+          bytesTransferred: (bytesTransferred / 1e6).toFixed(2) + ' MB',
+          totalSamples
         });
         
-        // Convert to Mbps properly
-        const downloadSpeedMbps = downloadBps / 1000000; // Convert bps to Mbps
-        const uploadSpeedMbps = uploadBps / 1000000; // Convert bps to Mbps
-        
-        console.log('Final processed values:', {
-          downloadSpeedMbps,
-          uploadSpeedMbps,
-          latencyMs,
-          jitterMs,
-          packetLossPercent
-        });
+        // Converter para Mbps com mais precisão
+        const downloadSpeedMbps = downloadBps / 1000000;
+        const uploadSpeedMbps = uploadBps / 1000000;
 
         const speedTestResults: SpeedTestResults = {
-          downloadSpeed: downloadSpeedMbps,
-          uploadSpeed: uploadSpeedMbps,
-          latency: latencyMs,
-          jitter: jitterMs,
-          packetLoss: packetLossPercent
+          downloadSpeed: Math.round(downloadSpeedMbps * 100) / 100, // 2 casas decimais
+          uploadSpeed: Math.round(uploadSpeedMbps * 100) / 100,
+          latency: Math.round(latencyMs * 100) / 100,
+          jitter: Math.round(jitterMs * 100) / 100,
+          packetLoss: Math.round(packetLossPercent * 10000) / 10000 // 4 casas decimais
         };
 
-        setCurrentTest("✅ Teste concluído!");
+        setTestDetails({
+          duration,
+          bytesTransferred: Math.round(bytesTransferred / 1e6), // MB
+          samples: totalSamples
+        });
+
+        setCurrentTest("✅ Teste real concluído!");
+        setProgress(100);
         setResults(speedTestResults);
         setIsRunning(false);
 
-        // Chamar callback se fornecido
         if (onTestComplete) {
           onTestComplete(speedTestResults);
         }
 
         toast({
           title: "Teste de velocidade concluído",
-          description: "Medições reais da sua conexão foram obtidas com sucesso.",
+          description: `Medições reais obtidas em ${duration}s com ${totalSamples} amostras.`,
         });
       };
 
@@ -118,6 +187,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
           variant: "destructive",
         });
         setCurrentTest("");
+        setProgress(0);
         setIsRunning(false);
       };
 
@@ -132,27 +202,47 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
         variant: "destructive",
       });
       setCurrentTest("");
+      setProgress(0);
       setIsRunning(false);
     }
   };
 
   const formatSpeed = (speed: number) => speed.toFixed(2);
   const formatMs = (ms: number) => ms.toFixed(2);
-  const formatPercent = (percent: number) => percent.toFixed(2);
+  const formatPercent = (percent: number) => percent.toFixed(4);
 
   return (
     <div className="space-y-6">
-      {/* Speed Test Card */}
       <Card className="border-2 rounded-2xl bg-gradient-to-br from-background to-muted/20 shadow-diagnostic">
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl font-semibold text-foreground mb-2 flex items-center justify-center gap-2">
-            🚀 Teste de Velocidade
+            🚀 Teste de Velocidade Real
           </CardTitle>
           <p className="text-muted-foreground">
-            Meça a qualidade da sua conexão para chamadas
+            Teste real usando servidores da Cloudflare
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Test Mode Selector */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Modo de Teste
+            </label>
+            <Select value={testMode} onValueChange={(value: TestMode) => setTestMode(value)} disabled={isRunning}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fast">
+                  🚀 Rápido (≈15s) - Teste básico
+                </SelectItem>
+                <SelectItem value="complete">
+                  🔬 Completo (≈30s) - Teste detalhado
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Start Button */}
           <div className="text-center">
             <Button
@@ -161,21 +251,45 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
               size="lg"
               className="bg-gradient-primary hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-diagnostic px-8 py-6 text-lg rounded-2xl"
             >
-              {isRunning ? "Testando..." : "Iniciar Teste"}
+              {isRunning ? "Testando..." : `Iniciar Teste ${getTestConfig(testMode).estimatedDuration}`}
             </Button>
           </div>
 
-          {/* Status Area */}
+          {/* Progress Area */}
           {(isRunning || currentTest) && (
-            <div className="text-center p-4 bg-muted/20 rounded-xl">
-              <p className="text-lg font-medium text-foreground">
+            <div className="space-y-4 p-4 bg-muted/20 rounded-xl">
+              <p className="text-lg font-medium text-foreground text-center">
                 {currentTest}
               </p>
               {isRunning && (
-                <div className="mt-3 w-full bg-muted rounded-full h-2">
-                  <div className="bg-gradient-primary h-2 rounded-full animate-pulse" style={{width: "60%"}}></div>
+                <div className="space-y-2">
+                  <Progress value={progress} className="h-3" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    {progress}% completo
+                  </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Test Details */}
+          {testDetails && results && (
+            <div className="p-4 bg-accent/20 border border-accent/30 rounded-xl">
+              <h4 className="font-semibold mb-2 text-accent-foreground">Detalhes do Teste</h4>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="font-bold text-primary">{testDetails.duration}s</div>
+                  <div className="text-muted-foreground">Duração</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-primary">{testDetails.bytesTransferred} MB</div>
+                  <div className="text-muted-foreground">Transferidos</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold text-primary">{testDetails.samples}</div>
+                  <div className="text-muted-foreground">Amostras</div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -189,7 +303,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                       {formatSpeed(results.downloadSpeed)} Mbps
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      ✅ Velocidade de Download
+                      📥 Download Real
                     </div>
                   </div>
                 </div>
@@ -200,7 +314,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                       {formatSpeed(results.uploadSpeed)} Mbps
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      ✅ Velocidade de Upload
+                      📤 Upload Real
                     </div>
                   </div>
                 </div>
@@ -211,7 +325,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                       {formatMs(results.latency)} ms
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      ✅ Latência
+                      ⚡ Latência
                     </div>
                   </div>
                 </div>
@@ -222,7 +336,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                       {formatMs(results.jitter)} ms
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      ✅ Jitter
+                      📊 Jitter
                     </div>
                   </div>
                 </div>
@@ -233,13 +347,13 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                       {formatPercent(results.packetLoss)}%
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      ✅ Perda de Pacotes
+                      📦 Perda de Pacotes
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Speed Test Summary */}
+              {/* Connection Quality Summary */}
               <div className="mt-6 p-6 rounded-2xl border-2 border-dashed border-primary/20 bg-primary/5">
                 <div className="text-center">
                   <h3 className="text-xl font-semibold mb-3">
