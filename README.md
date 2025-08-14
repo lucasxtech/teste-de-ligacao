@@ -1,106 +1,118 @@
-# Teste de Ligação - Diagnóstico de Internet
+# 🚀 Teste de Ligação - GitHub Pages
 
-Um aplicativo web moderno para testar a velocidade da sua internet e diagnosticar problemas de conectividade. Desenvolvido com React, TypeScript e Vite.
+Um aplicativo moderno para testar a velocidade da sua conexão de internet, construído com React, TypeScript e Tailwind CSS.
 
-## 🚀 Funcionalidades
+## 🌐 Demo
 
-- **Teste de Velocidade**: Mede download, upload e latência
-- **Diagnóstico de Conectividade**: Verifica se seu dispositivo está pronto para chamadas
-- **Interface Moderna**: Design responsivo com shadcn/ui
-- **Tema Escuro/Claro**: Suporte a múltiplos temas
-- **Resultados Detalhados**: Histórico e análise de performance
+Acesse o aplicativo em: **https://lucasxtech.github.io/teste-de-ligacao**
+
+## ✨ Funcionalidades
+
+- 🚀 **Teste de Velocidade**: Medição precisa de download e upload
+- 📊 **Diagnóstico de Rede**: Análise completa da sua conexão
+- 🌙 **Tema Escuro/Claro**: Interface adaptável ao seu gosto
+- 📱 **Responsivo**: Funciona perfeitamente em desktop e mobile
+- ⚡ **Performance**: Carregamento rápido e interface fluida
 
 ## 🛠️ Tecnologias
 
-- **Frontend**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Teste de Velocidade**: Cloudflare Speedtest
-- **Roteamento**: React Router DOM
-- **Formulários**: React Hook Form + Zod
-- **Notificações**: Sonner
+- **React 18** - Framework principal
+- **TypeScript** - Tipagem estática
+- **Vite** - Build tool e dev server
+- **Tailwind CSS** - Estilização
+- **Shadcn/ui** - Componentes UI
+- **React Router** - Navegação
+- **Cloudflare Speedtest** - API de teste de velocidade
 
-## Como editar este código?
+## 🚀 Deploy no GitHub Pages
 
-Existem várias maneiras de editar sua aplicação.
+O projeto está configurado para deploy automático no GitHub Pages. Após cada push na branch `main`, o deploy acontece automaticamente.
 
-**Use seu IDE preferido**
+### Configuração Manual (se necessário)
 
-Se você quiser trabalhar localmente usando seu próprio IDE, pode clonar este repositório e fazer push das alterações.
+1. **Vá para Settings > Pages** no seu repositório GitHub
+2. **Em "Source"**, selecione **"GitHub Actions"**
+3. **Aguarde o deploy** - acontece automaticamente a cada push
+4. **URL**: `https://SEU_USUARIO.github.io/teste-de-ligacao`
 
-O único requisito é ter Node.js & npm instalados - [instale com nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🏃‍♂️ Desenvolvimento Local
 
-Siga estes passos:
-
-```sh
-# Passo 1: Clone o repositório usando a URL Git do projeto.
-git clone <YOUR_GIT_URL>
-
-# Passo 2: Navegue até o diretório do projeto.
-cd <YOUR_PROJECT_NAME>
-
-# Passo 3: Instale as dependências necessárias.
-npm i
-
-# Passo 4: Inicie o servidor de desenvolvimento com auto-reload e preview instantâneo.
-npm run dev
-```
-
-**Edite um arquivo diretamente no GitHub**
-
-- Navegue até o(s) arquivo(s) desejado(s).
-- Clique no botão "Edit" (ícone de lápis) no canto superior direito da visualização do arquivo.
-- Faça suas alterações e faça commit das mudanças.
-
-**Use GitHub Codespaces**
-
-- Navegue até a página principal do seu repositório.
-- Clique no botão "Code" (botão verde) próximo ao canto superior direito.
-- Selecione a aba "Codespaces".
-- Clique em "New codespace" para iniciar um novo ambiente Codespace.
-- Edite arquivos diretamente dentro do Codespace e faça commit e push das suas alterações quando terminar.
-
-## Quais tecnologias são usadas neste projeto?
-
-Este projeto é construído com:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## 🚀 Como fazer Deploy
-
-Este projeto está configurado para deploy automático em várias plataformas:
-
-### GitHub Pages (Recomendado)
-1. Faça push do código para o GitHub
-2. Vá em Settings > Pages
-3. Selecione "GitHub Actions" como source
-4. O deploy acontecerá automaticamente a cada push na branch `main`
-
-### Vercel
-1. Conecte seu repositório no [Vercel](https://vercel.com)
-2. O deploy acontecerá automaticamente
-3. URL será: `https://seu-projeto.vercel.app`
-
-### Netlify
-1. Conecte seu repositório no [Netlify](https://netlify.com)
-2. Configure build command: `npm run build`
-3. Configure publish directory: `dist`
-4. O deploy acontecerá automaticamente
-
-### Deploy Manual
 ```bash
+# Instalar dependências
+npm install
+
+# Iniciar servidor de desenvolvimento
+npm run dev
+
+# Build para produção
 npm run build
-# Faça upload da pasta 'dist' para seu servidor
+
+# Preview da build
+npm run preview
+
+# Deploy manual (se necessário)
+npm run deploy
 ```
 
-## Scripts disponíveis
+## 📁 Estrutura do Projeto
 
-- `npm run dev` - Inicia o servidor de desenvolvimento
-- `npm run build` - Constrói o projeto para produção
-- `npm run build:dev` - Constrói o projeto em modo desenvolvimento
-- `npm run lint` - Executa o linter
-- `npm run preview` - Visualiza a versão de produção localmente
+```
+src/
+├── components/          # Componentes React
+│   ├── ui/             # Componentes base (shadcn/ui)
+│   ├── SpeedTest.tsx   # Componente de teste de velocidade
+│   ├── DiagnosticCard.tsx # Card de diagnóstico
+│   └── ThemeToggle.tsx # Toggle de tema
+├── pages/              # Páginas da aplicação
+├── hooks/              # Custom hooks
+├── lib/                # Utilitários
+└── utils/              # Funções auxiliares
+```
+
+## 🔧 Scripts Disponíveis
+
+- `npm run dev` - Servidor de desenvolvimento
+- `npm run build` - Build para produção
+- `npm run preview` - Preview da build
+- `npm run lint` - Verificação de código
+- `npm run deploy` - Deploy manual para GitHub Pages
+
+## 🌟 Características
+
+- **PWA Ready** - Pronto para Progressive Web App
+- **SEO Optimized** - Meta tags e estrutura otimizada
+- **Accessibility** - Componentes acessíveis
+- **Performance** - Lazy loading e otimizações
+- **Modern UI** - Interface moderna e intuitiva
+
+## 📱 Compatibilidade
+
+- ✅ Chrome/Edge (recomendado)
+- ✅ Firefox
+- ✅ Safari
+- ✅ Mobile browsers
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 🆘 Suporte
+
+Se encontrar algum problema:
+
+1. Verifique se está usando Node.js 18+
+2. Limpe o cache: `npm run clean`
+3. Reinstale as dependências: `rm -rf node_modules && npm install`
+4. Abra uma issue no GitHub
+
+---
+
+**🎉 Divirta-se testando sua conexão!**
