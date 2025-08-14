@@ -216,7 +216,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
       <Card className="border-2 rounded-2xl bg-gradient-to-br from-background to-muted/20 shadow-diagnostic">
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl font-semibold text-foreground mb-2 flex items-center justify-center gap-2">
-            🚀 Teste de Velocidade Real
+            🚀 Teste de Velocidade de Internet
           </CardTitle>
           <p className="text-muted-foreground">
             Teste real usando servidores da Cloudflare
