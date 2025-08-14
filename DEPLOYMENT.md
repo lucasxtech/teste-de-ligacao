@@ -1,6 +1,6 @@
-# 🚀 Guia Completo de Deploy
+# 🚀 Guia de Deploy - GitHub Pages
 
-Este projeto está configurado para deploy automático em várias plataformas. Escolha a opção que preferir:
+Este projeto está configurado para deploy automático no GitHub Pages. Siga os passos abaixo:
 
 ## 📋 Pré-requisitos
 
@@ -29,82 +29,30 @@ git branch -M main
 git push -u origin main
 ```
 
-## 🌐 Opções de Deploy
-
-### 🎯 GitHub Pages (Recomendado - Gratuito)
+## 🎯 GitHub Pages
 
 **Vantagens:**
 - ✅ Totalmente gratuito
 - ✅ Deploy automático via GitHub Actions
 - ✅ Integração perfeita com GitHub
 - ✅ HTTPS automático
+- ✅ Sem necessidade de configuração externa
 
 **Configuração:**
 1. Vá para Settings > Pages no seu repositório
 2. Em "Source", selecione "GitHub Actions"
 3. O deploy acontecerá automaticamente a cada push na branch `main`
-4. URL será: `https://SEU_USUARIO.github.io/SEU_REPOSITORIO`
-
-### ⚡ Vercel (Recomendado - Gratuito)
-
-**Vantagens:**
-- ✅ Deploy muito rápido
-- ✅ Preview automático para PRs
-- ✅ Analytics incluídos
-- ✅ Domínio personalizado gratuito
-
-**Configuração:**
-1. Vá para [vercel.com](https://vercel.com)
-2. Conecte sua conta GitHub
-3. Clique em "New Project"
-4. Selecione seu repositório
-5. Clique em "Deploy"
-6. URL será: `https://SEU_REPOSITORIO.vercel.app`
-
-### 🌊 Netlify (Gratuito)
-
-**Vantagens:**
-- ✅ Deploy automático
-- ✅ Formulários incluídos
-- ✅ Funções serverless
-- ✅ Domínio personalizado
-
-**Configuração:**
-1. Vá para [netlify.com](https://netlify.com)
-2. Conecte sua conta GitHub
-3. Clique em "New site from Git"
-4. Selecione seu repositório
-5. Configure:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-6. Clique em "Deploy site"
-
-### 🔥 Firebase Hosting (Gratuito)
-
-**Vantagens:**
-- ✅ Integração com Google Cloud
-- ✅ CDN global
-- ✅ Analytics incluídos
-- ✅ Domínio personalizado
-
-**Configuração:**
-1. Instale Firebase CLI: `npm install -g firebase-tools`
-2. Login: `firebase login`
-3. Inicialize: `firebase init hosting`
-4. Configure:
-   - Public directory: `dist`
-   - Single-page app: `yes`
-5. Deploy: `firebase deploy`
+4. URL será: `https://SEU_USUARIO.github.io/teste-de-ligacao`
 
 ## 🔄 Deploy Automático
 
 O projeto já está configurado com:
 
 - **GitHub Actions** (`.github/workflows/deploy.yml`)
-- **Vercel** (`vercel.json`)
-- **Netlify** (`netlify.toml`)
+- **Script de deploy** (`npm run deploy`)
+- **Configuração do Vite** para GitHub Pages
 
-Apenas conecte o repositório na plataforma escolhida e o deploy será automático!
+O deploy acontecerá automaticamente a cada push na branch `main`!
 
 ## 📱 Testando o Deploy
 
