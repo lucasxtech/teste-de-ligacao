@@ -6,6 +6,7 @@ import { SpeedTest } from "./SpeedTest";
 import { DiagnosticTester, DiagnosticResult, DiagnosticSummary } from "@/utils/diagnostics";
 import { SpeedTestResults } from "./SpeedTest";
 import { ThemeToggle } from "./ThemeToggle";
+import { MicrophoneTest } from "./MicrophoneTest";
 import { Play, Copy, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -144,6 +145,11 @@ export const DiagnosticPage = () => {
         {/* Speed Test Section */}
         <div className="mb-8">
           <SpeedTest onTestComplete={handleSpeedTestComplete} />
+        </div>
+
+        {/* Microphone Test Section */}
+        <div className="mb-8">
+          <MicrophoneTest />
         </div>
 
         {/* Action Button */}

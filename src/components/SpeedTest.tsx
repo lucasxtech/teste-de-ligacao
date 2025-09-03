@@ -218,9 +218,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
           <CardTitle className="text-2xl font-semibold text-foreground mb-2 flex items-center justify-center gap-2">
             🚀 Teste de Velocidade de Internet
           </CardTitle>
-          <p className="text-muted-foreground">
-            Teste real usando servidores da Cloudflare
-          </p>
+          
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Test Mode Selector */}
