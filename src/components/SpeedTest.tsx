@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 // @ts-ignore - No types available for this library
 import SpeedTestLib from "@cloudflare/speedtest";
@@ -45,7 +47,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
           { type: 'upload' as const, bytes: 5e6, count: 6 },
           { type: 'packetLoss' as const, numPackets: 50 },
         ] as any[],
-        estimatedDuration: "≈30s"
+        estimatedDuration: "30s"
       };
     }
     
@@ -58,7 +60,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
         { type: 'upload' as const, bytes: 2e6, count: 3 },
         { type: 'packetLoss' as const, numPackets: 20 },
       ] as any[],
-      estimatedDuration: "≈15s"
+      estimatedDuration: "15s"
     };
   };
 
@@ -67,7 +69,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
     setResults(null);
     setProgress(0);
     setTestDetails(null);
-    setCurrentTest("🔄 Iniciando teste real da rede...");
+    setCurrentTest("🔄 Iniciando teste de velocidade da rede...");
     
     const startTime = Date.now();
     let bytesTransferred = 0;
@@ -91,15 +93,15 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
         
         if (type === 'latency') {
           currentPhase = 1;
-          setCurrentTest("📊 Medindo latência real da rede...");
+          setCurrentTest("📊 Medindo latência da rede...");
           setProgress(25);
         } else if (type === 'download') {
           currentPhase = 2;
-          setCurrentTest("📥 Testando velocidade real de download...");
+          setCurrentTest("📥 Testando velocidade de download...");
           setProgress(50);
         } else if (type === 'upload') {
           currentPhase = 3;
-          setCurrentTest("📤 Testando velocidade real de upload...");
+          setCurrentTest("📤 Testando velocidade de upload...");
           setProgress(75);
         } else if (type === 'packetLoss') {
           currentPhase = 4;
@@ -164,7 +166,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
           samples: totalSamples
         });
 
-        setCurrentTest("✅ Teste real concluído!");
+        setCurrentTest("✅ Teste de velocidade concluído!");
         setProgress(100);
         setResults(speedTestResults);
         setIsRunning(false);
@@ -175,7 +177,7 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
 
         toast({
           title: "Teste de velocidade concluído",
-          description: `Medições reais obtidas em ${duration}s com ${totalSamples} amostras.`,
+          description: `Medições de velocidade obtidas em ${duration}s com ${totalSamples} amostras.`,
         });
       };
 
@@ -218,7 +220,9 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
           <CardTitle className="text-2xl font-semibold text-foreground mb-2 flex items-center justify-center gap-2">
             🚀 Teste de Velocidade de Internet
           </CardTitle>
-          
+          <p className="text-muted-foreground">
+            Meça download, upload, latência, jitter e perda de pacotes para chamadas estáveis.
+          </p>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Test Mode Selector */}
@@ -232,10 +236,10 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="fast">
-                  🚀 Rápido (≈15s) - Teste básico
+                  🚀 Rápido
                 </SelectItem>
                 <SelectItem value="complete">
-                  🔬 Completo (≈30s) - Teste detalhado
+                  🔬 Detalhado
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -300,8 +304,18 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                     <div className="text-2xl font-bold text-success">
                       {formatSpeed(results.downloadSpeed)} Mbps
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                       📥 Download Real
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button aria-label="Ajuda"><Info className="h-3 w-3 text-muted-foreground" /></button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Velocidade de download real medida. Importante para receber dados em chamadas de vídeo.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 </div>
@@ -311,8 +325,18 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                     <div className="text-2xl font-bold text-success">
                       {formatSpeed(results.uploadSpeed)} Mbps
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                       📤 Upload Real
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button aria-label="Ajuda"><Info className="h-3 w-3 text-muted-foreground" /></button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Velocidade de upload real medida. Importante para enviar dados em chamadas de vídeo.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 </div>
@@ -322,8 +346,18 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                     <div className="text-2xl font-bold text-primary">
                       {formatMs(results.latency)} ms
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                       ⚡ Latência
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button aria-label="Ajuda"><Info className="h-3 w-3 text-muted-foreground" /></button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Tempo de resposta da rede. Valores baixos (&lt; 100ms) são ideais para chamadas sem atraso.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 </div>
@@ -333,8 +367,18 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                     <div className="text-2xl font-bold text-primary">
                       {formatMs(results.jitter)} ms
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                       📊 Jitter
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button aria-label="Ajuda"><Info className="h-3 w-3 text-muted-foreground" /></button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Variação na latência. Valores baixos (&lt; 10ms) indicam conexão estável para chamadas.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 </div>
@@ -344,8 +388,18 @@ export const SpeedTest = ({ onTestComplete }: SpeedTestProps) => {
                     <div className="text-2xl font-bold text-warning">
                       {formatPercent(results.packetLoss)}%
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                       📦 Perda de Pacotes
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button aria-label="Ajuda"><Info className="h-3 w-3 text-muted-foreground" /></button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Pacotes de dados perdidos na transmissão. Valores baixos (&lt; 1%) são essenciais para chamadas estáveis.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 </div>

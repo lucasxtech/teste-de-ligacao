@@ -63,8 +63,9 @@ export const DiagnosticCard = ({
   const displayDescription = status === "loading" ? "⏳ Em análise..." : 
                             status === "pending" ? "⏱️ Aguardando..." : description;
 
-  // Tooltips específicos para casos problemáticos
+  // Tooltips explicativos para todos os testes
   const getSpecificTooltip = () => {
+    // Casos problemáticos específicos
     if (title.includes("IP detectado") && status === "error") {
       return "⚠️ Não foi possível identificar corretamente o IP ou obter dados completos da sua rede.\nIsso pode ser causado por:\n• Uso de VPN ou proxy\n• Bloqueios de firewall\n• Extensões no navegador que interferem na rede\nTente desativar VPNs e extensões, ou usar outra rede.";
     }
@@ -74,6 +75,39 @@ export const DiagnosticCard = ({
     if (title.includes("ICE candidates") && status === "loading") {
       return "⏳ Estamos tentando identificar possíveis rotas para chamadas (WebRTC).\nIsso pode ficar preso em 'em análise' quando:\n• Há bloqueio de conexões UDP\n• A rede usa NAT simétrico ou CGNAT\n• O navegador ou rede bloqueia servidores STUN";
     }
+    
+    // Tooltips explicativos gerais
+    if (title.includes("Microfone")) {
+      return "🎤 Verifica se o navegador tem acesso ao microfone e se está funcionando corretamente.\nNecessário para chamadas de voz e vídeo.";
+    }
+    if (title.includes("Câmera")) {
+      return "📹 Verifica se o navegador tem acesso à câmera e se está funcionando corretamente.\nNecessário para chamadas de vídeo.";
+    }
+    if (title.includes("Navegador")) {
+      return "🌐 Verifica se o navegador suporta as tecnologias necessárias para chamadas (WebRTC).\nChrome, Firefox e Safari são recomendados.";
+    }
+    if (title.includes("Sistema operacional")) {
+      return "💻 Verifica informações básicas do sistema operacional.\nAlguns sistemas podem ter limitações específicas.";
+    }
+    if (title.includes("Conexão de rede")) {
+      return "🌐 Verifica se a conexão de internet está funcionando e se permite comunicação WebRTC.\nConexões instáveis podem causar problemas nas chamadas.";
+    }
+    if (title.includes("WebRTC")) {
+      return "☎️ WebRTC é a tecnologia que permite chamadas diretas entre navegadores.\nVerifica se todos os componentes necessários estão funcionando.";
+    }
+    if (title.includes("STUN/TURN")) {
+      return "🔄 STUN/TURN são servidores que ajudam a estabelecer conexões WebRTC.\nNecessários para conectar através de firewalls e NAT.";
+    }
+    if (title.includes("ICE candidates")) {
+      return "🔗 ICE candidates são possíveis rotas de conexão identificadas pelo navegador.\nQuanto mais candidatos, melhor a chance de conexão bem-sucedida.";
+    }
+    if (title.includes("Permissões")) {
+      return "🔐 Verifica se o navegador tem as permissões necessárias para microfone e câmera.\nEssas permissões são essenciais para chamadas.";
+    }
+    if (title.includes("Codecs")) {
+      return "🎵 Verifica quais formatos de áudio e vídeo o navegador suporta.\nCodecs compatíveis garantem melhor qualidade de chamada.";
+    }
+    
     return explanation;
   };
 
@@ -98,7 +132,7 @@ export const DiagnosticCard = ({
               <Icon className={cn("h-6 w-6", config.iconColor)} />
             </div>
             <span className="flex-1">{title}</span>
-            {(status === "error" || status === "warning" || status === "loading") && getSpecificTooltip() && (
+            {getSpecificTooltip() && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button className="p-1 hover:bg-muted/20 rounded-full transition-colors">

@@ -152,26 +152,38 @@ export const DiagnosticPage = () => {
           <MicrophoneTest />
         </div>
 
-        {/* Action Button */}
-        <div className="text-center mb-8">
-          <Button
-            onClick={handleStartDiagnostic}
-            disabled={isRunning}
-            size="lg"
-            className="bg-gradient-primary hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-diagnostic px-8 py-6 text-lg"
-          >
-            {isRunning ? (
-              <>
-                <Activity className="mr-2 h-5 w-5 animate-spin" />
-                Executando diagnóstico...
-              </>
-            ) : (
-              <>
-                <Play className="mr-2 h-5 w-5" />
-                Iniciar Diagnóstico
-              </>
-            )}
-          </Button>
+        {/* Diagnostic Test Section */}
+        <div className="mb-8">
+          <Card className="border-2 rounded-2xl bg-gradient-to-br from-background to-muted/20 shadow-diagnostic">
+            <CardHeader className="text-center pb-4">
+              <CardTitle className="text-2xl font-semibold text-foreground mb-2 flex items-center justify-center gap-2">
+                ☎️ Teste de Ligação
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Execute um diagnóstico completo do seu sistema para verificar se está pronto para chamadas
+              </p>
+            </CardHeader>
+            <CardContent className="text-center">
+              <Button
+                onClick={handleStartDiagnostic}
+                disabled={isRunning}
+                size="lg"
+                className="bg-gradient-primary hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-diagnostic px-8 py-6 text-lg rounded-2xl"
+              >
+                {isRunning ? (
+                  <>
+                    <Activity className="mr-2 h-5 w-5 animate-spin" />
+                    Executando diagnóstico...
+                  </>
+                ) : (
+                  <>
+                    <Play className="mr-2 h-5 w-5" />
+                    Iniciar Diagnóstico
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Results Section */}

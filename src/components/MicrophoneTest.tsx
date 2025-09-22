@@ -265,9 +265,10 @@ export const MicrophoneTest: React.FC = () => {
     if (value === null || Number.isNaN(value)) return "warning";
     switch (metric) {
       case "rms":
-        // bom 10-40, ok 5-10 ou 40-80, ruim fora
-        if (value >= 10 && value <= 40) return "success";
-        if ((value >= 5 && value < 10) || (value > 40 && value <= 80)) return "warning";
+        // ótimo acima de 10, bom a partir de 6, aceitável 3-6, ruim abaixo de 3
+        if (value >= 10) return "success";
+        if (value >= 6 && value < 10) return "success";
+        if (value >= 3 && value < 6) return "warning";
         return "error";
       case "peak":
         if (value < 120) return "success";
@@ -326,7 +327,10 @@ export const MicrophoneTest: React.FC = () => {
 
   return (
     <div className="p-6 rounded-2xl border bg-card text-card-foreground shadow-diagnostic space-y-4">
-      <h2 className="text-xl font-bold">🎤 Teste seu microfone</h2>
+      <h2 className="text-2xl font-semibold text-center">🎤 Teste seu microfone</h2>
+      <p className="text-center text-muted-foreground">
+        Grave um trecho curto para analisar nível, ruído, clipping e qualidade geral.
+      </p>
 
       {error && (
         <div className="text-sm text-error bg-error/10 border border-error/20 rounded-md p-2">
@@ -340,11 +344,11 @@ export const MicrophoneTest: React.FC = () => {
         </div>
       )}
 
-      <div className="flex gap-3">
+      <div className="text-center">
         {!isRecording ? (
           <button
             onClick={startRecording}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
+            className="bg-gradient-primary hover:opacity-90 transition-all duration-300 transform hover:scale-105 shadow-diagnostic px-6 py-3 text-base font-semibold rounded-2xl text-white"
           >
             🎙️ Iniciar Gravação
           </button>
@@ -385,7 +389,7 @@ export const MicrophoneTest: React.FC = () => {
                         <button aria-label="Ajuda"><Info className="h-4 w-4 text-muted-foreground" /></button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        Intensidade do sinal. Bom: RMS 10–40 (fala normal), Pico &lt; 120.
+                        Intensidade do sinal. Ótimo: RMS ≥ 10, Bom: RMS ≥ 6, Aceitável: RMS ≥ 3, Pico &lt; 120.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
